@@ -129,11 +129,13 @@ void setup_pci(void)
 {
 	const int bdf = 0;
 
-        uint32_t id = pci_config_readl(bdf, 0);
-        if (id == (PCI_VENDOR_ID_INTEL | (PCI_DEVICE_ID_INTEL_82441 << 16)))
+    uint32_t id = pci_config_readl(bdf, 0);
+    if (id == (PCI_VENDOR_ID_INTEL | (PCI_DEVICE_ID_INTEL_82441 << 16)))
 		use_i440fx_routing = true;
 	else if (id == (PCI_VENDOR_ID_INTEL | (PCI_DEVICE_ID_INTEL_Q35_MCH << 16)))
 		use_i440fx_routing = false;
+	else if (id == (PCI_VENDOR_ID_QEMU | (PCI_DEVICE_ID_QEMU_VIRT_PCI << 16)))
+		return;
 	else
 		panic();
 

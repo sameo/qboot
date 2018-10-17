@@ -101,10 +101,11 @@ void setup_hw(void)
 	const uint8_t *init_start = &sinit + 0xfff00000;
 	volatile uint8_t *rom_check = &stext;
 	int rom_check_value;
-	int pambase;
+	int pambase = -1;
 
-        uint32_t id = pci_config_readl(bdf, 0);
-        if (id == (PCI_VENDOR_ID_INTEL | (PCI_DEVICE_ID_INTEL_82441 << 16))) {
+    uint32_t id = pci_config_readl(bdf, 0);
+
+    if (id == (PCI_VENDOR_ID_INTEL | (PCI_DEVICE_ID_INTEL_82441 << 16))) {
 		setup_piix();
 		setup_piix_pm();
 		pambase = I440FX_PAM0;
@@ -112,13 +113,14 @@ void setup_hw(void)
 		setup_ich9();
 		setup_ich9_pm();
 		pambase = Q35_HOST_BRIDGE_PAM0;
+	} else if (id == (PCI_VENDOR_ID_QEMU | (PCI_DEVICE_ID_QEMU_VIRT_PCI << 16))) {
 	} else
 		panic();
 
 	// Make ram from 0xc0000-0xf0000 read-write
 	rom_check_value = *rom_check;
 	*rom_check = rom_check_value + 1;
-	if (*rom_check == rom_check_value)
+	if (pambase != -1 && *rom_check == rom_check_value)
 		setup_pam(bdf, pambase);
 
 	// Shadow BIOS; we're still running from 0xffff0000
